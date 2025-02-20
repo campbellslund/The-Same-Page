@@ -12,6 +12,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 TERMS_FILE = 'data/terms.json'
 AGREEMENT_FILE = 'data/agreement.json'
 CONFLICTING_FILE = 'data/conflicting.json'
+NEW_TERMS_FILE = 'data/new_terms.json'  # <== NEW FILE
+
 SIMILARITY_THRESHOLD = 0.8  # Adjust this as needed
 
 ##############################
@@ -30,24 +32,12 @@ def save_json(filepath, data):
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2)
 
-def find_term_entry(terms_data, term):
-    """Locate the term object in 'terms_data' (case-insensitive)."""
-    for entry in terms_data:
+def find_term_entry(term_list, term):
+    """Locate the term object in 'term_list' (case-insensitive)."""
+    for entry in term_list:
         if entry["term"].lower() == term.lower():
             return entry
     return None
-
-def definition_exists(term_entry, discipline, new_definition):
-    """
-    Check if the exact (discipline + definition) pair already exists
-    for the given term_entry.
-    """
-    for def_obj in term_entry["definitions"]:
-        same_discipline = def_obj["discipline"].strip().lower() == discipline.strip().lower()
-        same_definition = def_obj["definition"].strip().lower() == new_definition.strip().lower()
-        if same_discipline and same_definition:
-            return True
-    return False
 
 def text_similarity(a, b):
     """
@@ -59,43 +49,30 @@ def text_similarity(a, b):
     return doc_a.similarity(doc_b)
 
 ##############################
-#        MAIN PROCESS       #
+#       MAIN PROCESS        #
 ##############################
 
 def process_definition(discipline, term, new_definition):
     """
-    Logic for handling a new submission:
-      1) If the term does NOT exist in terms.json:
-         - Create a new term entry. 
-      2) If the term DOES exist:
-         - Compare 'new_definition' to all existing definitions for that term.
-         - Find the maximum similarity across all definitions.
-         - If max similarity < SIMILARITY_THRESHOLD => add to conflicting.json
-           else => add to agreement.json
-         - Also add the new definition to terms.json if it's not already there.
+    Updated logic:
+      1) If the term does NOT exist in terms.json, add it to new_terms.json
+         (no similarity check, no classification).
+      2) If the term DOES exist in terms.json:
+         - Compare new_definition to all existing definitions for that term.
+         - If max similarity < SIMILARITY_THRESHOLD => conflicting.json
+           else => agreement.json
+         - Do NOT add the new definition to terms.json.
     """
 
     term_entry = find_term_entry(terms_data, term)
 
-    # 1) New term
+    # (1) New term: store in new_terms.json
     if not term_entry:
-        new_entry = {
-            "term": term,
-            "definitions": [
-                {
-                    "discipline": discipline,
-                    "definition": new_definition
-                }
-            ]
-        }
-        terms_data.append(new_entry)
-        print(f"Added new term '{term}' to terms.json (no existing definitions to compare).")
+        add_new_term(discipline, term, new_definition)
         return
 
-    # 2) Existing term: Compare to all existing definitions
+    # (2) Existing term: compare & classify
     existing_definitions = term_entry["definitions"]
-
-    # Compute similarity to each existing definition
     similarities = []
     for def_obj in existing_definitions:
         existing_text = def_obj["definition"]
@@ -104,7 +81,6 @@ def process_definition(discipline, term, new_definition):
 
     max_similarity = max(similarities)
 
-    # New logic: if below threshold -> conflict, else -> agreement
     if max_similarity < SIMILARITY_THRESHOLD:
         # Conflict
         conflicting_data.append({
@@ -112,7 +88,7 @@ def process_definition(discipline, term, new_definition):
             "discipline": discipline,
             "definition": new_definition
         })
-        print(f"New definition for '{term}' added to conflicting.json (max similarity={max_similarity:.2f}).")
+        print(f"New definition for '{term}' => conflicting.json (max sim={max_similarity:.2f}).")
     else:
         # Agreement
         agreement_data.append({
@@ -120,17 +96,36 @@ def process_definition(discipline, term, new_definition):
             "discipline": discipline,
             "definition": new_definition
         })
-        print(f"New definition for '{term}' added to agreement.json (max similarity={max_similarity:.2f}).")
+        print(f"New definition for '{term}' => agreement.json (max sim={max_similarity:.2f}).")
 
-    # Finally, add it to terms.json if it's not a duplicate
-    if not definition_exists(term_entry, discipline, new_definition):
-        term_entry["definitions"].append({
+def add_new_term(discipline, term, new_definition):
+    """
+    Store a truly new term (not found in terms.json) into new_terms.json.
+    If the term already exists in new_terms.json, just append its definitions.
+    """
+    existing_new_term = find_term_entry(new_terms_data, term)
+
+    if not existing_new_term:
+        # Create a new entry in new_terms.json
+        new_term_obj = {
+            "term": term,
+            "definitions": [
+                {
+                    "discipline": discipline,
+                    "definition": new_definition
+                }
+            ]
+        }
+        new_terms_data.append(new_term_obj)
+        print(f"New term '{term}' => new_terms.json.")
+    else:
+        # Append the definition if it's not already there
+        # (Optional: you could do a check to avoid duplicates)
+        existing_new_term["definitions"].append({
             "discipline": discipline,
             "definition": new_definition
         })
-        print(f"Added new definition for term '{term}' under discipline '{discipline}' to terms.json.")
-    else:
-        print(f"Skipping duplicate definition for '{term}' under '{discipline}'.")
+        print(f"Appended another definition for new term '{term}' => new_terms.json.")
 
 ##############################
 #     LOAD JSON FILES       #
@@ -139,6 +134,7 @@ def process_definition(discipline, term, new_definition):
 terms_data = load_json(TERMS_FILE)         
 agreement_data = load_json(AGREEMENT_FILE)
 conflicting_data = load_json(CONFLICTING_FILE)
+new_terms_data = load_json(NEW_TERMS_FILE) 
 
 ##############################
 #  FETCH GOOGLE SHEET ROWS   #
@@ -169,9 +165,9 @@ rows = sheet.get_all_values()  # list of lists representing each row
 #  3 => Definition/Connotation
 
 for row in rows[1:]:  # skip the header
-    discipline = row[1].strip().lower()
-    term = row[2].strip().lower()
-    definition = row[3].strip().lower()
+    discipline = row[1].strip()
+    term = row[2].strip()
+    definition = row[3].strip()
     process_definition(discipline, term, definition)
 
 ##############################
@@ -181,6 +177,7 @@ for row in rows[1:]:  # skip the header
 save_json(TERMS_FILE, terms_data)
 save_json(AGREEMENT_FILE, agreement_data)
 save_json(CONFLICTING_FILE, conflicting_data)
+save_json(NEW_TERMS_FILE, new_terms_data)  
 print("Done updating JSON files!")
 
 ##############################
@@ -193,6 +190,7 @@ repo = Repo('.')
 repo.git.add('data/terms.json')
 repo.git.add('data/agreement.json')
 repo.git.add('data/conflicting.json')
+repo.git.add('data/new_terms.json')  
 repo.index.commit("Update JSON files from new form submissions")
 origin = repo.remote(name='origin')
 origin.push()
