@@ -42,11 +42,11 @@
     "term": "testing",
     "definitions": [
       {
-        "discipline": "CS",
+        "discipline": "cs",
         "definition": "this is a test"
       },
       {
-        "discipline": "Data/AI ethics",
+        "discipline": "data/ai ethics",
         "definition": "a very different definition"
       }
     ]
