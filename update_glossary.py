@@ -67,12 +67,11 @@ def process_definition(discipline, term, new_definition):
     Logic for handling a new submission:
       1) If the term does NOT exist in terms.json:
          - Create a new term entry. 
-         - (No conflict/agreement since there's nothing to compare yet.)
       2) If the term DOES exist:
          - Compare 'new_definition' to all existing definitions for that term.
          - Find the maximum similarity across all definitions.
-         - If max similarity >= SIMILARITY_THRESHOLD => add to agreement.json
-           else => add to conflicting.json
+         - If max similarity < SIMILARITY_THRESHOLD => add to conflicting.json
+           else => add to agreement.json
          - Also add the new definition to terms.json if it's not already there.
     """
 
@@ -96,16 +95,6 @@ def process_definition(discipline, term, new_definition):
     # 2) Existing term: Compare to all existing definitions
     existing_definitions = term_entry["definitions"]
 
-    if not existing_definitions:
-        term_entry["definitions"] = [
-            {
-                "discipline": discipline,
-                "definition": new_definition
-            }
-        ]
-        print(f"Term '{term}' existed but had no definitions. Added new definition.")
-        return
-
     # Compute similarity to each existing definition
     similarities = []
     for def_obj in existing_definitions:
@@ -113,18 +102,10 @@ def process_definition(discipline, term, new_definition):
         score = text_similarity(existing_text, new_definition)
         similarities.append(score)
 
-    # Determine if it's similar or conflicting based on max similarity
     max_similarity = max(similarities)
 
-    if max_similarity >= SIMILARITY_THRESHOLD:
-        # Agreement
-        agreement_data.append({
-            "term": term,
-            "discipline": discipline,
-            "definition": new_definition
-        })
-        print(f"New definition for '{term}' added to agreement.json (max similarity={max_similarity:.2f}).")
-    else:
+    # New logic: if below threshold -> conflict, else -> agreement
+    if max_similarity < SIMILARITY_THRESHOLD:
         # Conflict
         conflicting_data.append({
             "term": term,
@@ -132,6 +113,14 @@ def process_definition(discipline, term, new_definition):
             "definition": new_definition
         })
         print(f"New definition for '{term}' added to conflicting.json (max similarity={max_similarity:.2f}).")
+    else:
+        # Agreement
+        agreement_data.append({
+            "term": term,
+            "discipline": discipline,
+            "definition": new_definition
+        })
+        print(f"New definition for '{term}' added to agreement.json (max similarity={max_similarity:.2f}).")
 
     # Finally, add it to terms.json if it's not a duplicate
     if not definition_exists(term_entry, discipline, new_definition):

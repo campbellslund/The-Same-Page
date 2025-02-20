@@ -26,81 +26,77 @@
   </style>
 </head>
 <body>
-  <h1>The Same Page</h1>
-
-  <table id="glossaryTable">
-    <thead>
-      <tr>
-        <th>Term</th>
-        <th>AI Definition</th>
-        <th>Other Definition</th>
-        <th>Discipline</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Rows will be inserted here by JavaScript -->
-    </tbody>
-  </table>
-
-  <script>
-    // We'll fetch two JSON files:
-    // 1) 'terms.json' for known AI definitions
-    // 2) 'conflicting.json' for alternative definitions
-
-    const termsUrl = 'data/terms.json';
-    const conflictsUrl = 'data/conflicting.json';
-
-    let termsData = [];
-    let conflictingData = [];
-
-    // Fetch both files in parallel
-    Promise.all([
-      fetch(termsUrl).then(response => response.json()),
-      fetch(conflictsUrl).then(response => response.json())
-    ])
-    .then(([terms, conflicts]) => {
-      termsData = terms;
-      conflictingData = conflicts;
-      renderTable();
-    })
-    .catch(error => {
-      console.error('Error fetching JSON data:', error);
-    });
-
-    // Helper function to get the AI definition for a term from terms.json
-    function getAIDefinition(term) {
-      // Find the matching term object
-      const termItem = termsData.find(item => item.term === term);
-      if (!termItem) return 'No AI definition found.';
-
-      // Look for the definition where discipline == "AI"
-      const aiDefObj = termItem.definitions.find(def => def.discipline === 'AI');
-      return aiDefObj
-        ? aiDefObj.definition
-        : 'No AI definition found.';
-    }
-
-    // Renders table rows combining AI definition + conflicting definition
-    function renderTable() {
-      const tbody = document.querySelector('#glossaryTable tbody');
-      let html = '';
-
-      conflictingData.forEach(conflict => {
-        const { term, definition, discipline } = conflict;
-        const aiDefinition = getAIDefinition(term);
-
-        html += `
-          <tr>
-            <td>${term}</td>
-            <td>${aiDefinition}</td>
-            <td>${definition}</td>
-            <td>${discipline}</td>
-          </tr>
-        `;
+    <h1>Conflicting Terms</h1>
+    <table id="glossaryTable">
+      <thead>
+        <tr>
+          <th>Term</th>
+          <th>Existing Definitions (All Disciplines)</th>
+          <th>Conflicting Definition</th>
+          <th>Conflicting Discipline</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  
+    <script>
+      // We'll fetch two JSON files:
+      // 1) 'terms.json' for known definitions (multiple disciplines)
+      // 2) 'conflicting.json' for conflicting definitions
+      const termsUrl = 'data/terms.json';
+      const conflictsUrl = 'data/conflicting.json';
+  
+      let termsData = [];
+      let conflictingData = [];
+  
+      // Fetch both files in parallel
+      Promise.all([
+        fetch(termsUrl).then(response => response.json()),
+        fetch(conflictsUrl).then(response => response.json())
+      ])
+      .then(([terms, conflicts]) => {
+        termsData = terms;
+        conflictingData = conflicts;
+        renderTable();
+      })
+      .catch(error => {
+        console.error('Error fetching JSON data:', error);
       });
-
-      tbody.innerHTML = html;
-    }
-  </script>
-</body>
-</html>
+  
+      // Returns HTML string listing all definitions for the given term
+      function getAllDefinitions(term) {
+        // Find the matching term object
+        const termItem = termsData.find(item => item.term.toLowerCase() === term.toLowerCase());
+        if (!termItem || !termItem.definitions) {
+          return 'No definitions found.';
+        }
+        // Build a list of all discipline+definition pairs
+        // You can style this differently if desired
+        return termItem.definitions
+          .map(def => `${def.discipline}: ${def.definition}`)
+          .join('<br>');
+      }
+  
+      // Renders table rows combining all definitions + conflicting definition
+      function renderTable() {
+        const tbody = document.querySelector('#glossaryTable tbody');
+        let html = '';
+  
+        conflictingData.forEach(conflict => {
+          const { term, definition, discipline } = conflict;
+          const allDefs = getAllDefinitions(term);
+  
+          html += `
+            <tr>
+              <td>${term}</td>
+              <td>${allDefs}</td>
+              <td>${definition}</td>
+              <td>${discipline}</td>
+            </tr>
+          `;
+        });
+  
+        tbody.innerHTML = html;
+      }
+    </script>
+  </body>
