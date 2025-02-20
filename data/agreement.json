@@ -1,13 +1,12 @@
 [
-    {
-      "term": "model",
-      "discipline": "Data Science",
-      "definition": "A set of parameters or algorithms used to represent patterns in data, closely mirroring the AI usage."
-    },
-    {
-      "term": "bias",
-      "discipline": "Psychology",
-      "definition": "A tendency or inclination that can shape perception and decision-making, similar to social science usage."
-    }
-  ]
-  
+  {
+    "term": "model",
+    "discipline": "Data Science",
+    "definition": "A set of parameters or algorithms used to represent patterns in data, closely mirroring the AI usage."
+  },
+  {
+    "term": "bias",
+    "discipline": "Psychology",
+    "definition": "A tendency or inclination that can shape perception and decision-making, similar to social science usage."
+  }
+]

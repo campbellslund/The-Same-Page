@@ -1,42 +1,50 @@
 [
-    {
-      "term": "model",
-      "definitions": [
-        {
-          "discipline": "AI",
-          "definition": "A learned representation that can make predictions or decisions based on input data."
-        },
-        {
-          "discipline": "Philosophy",
-          "definition": "A conceptual framework used to explain or simulate phenomena in the real world."
-        }
-      ]
-    },
-    {
-      "term": "bias",
-      "definitions": [
-        {
-          "discipline": "AI",
-          "definition": "A systematic deviation in model predictions that can lead to unfair or incorrect outcomes."
-        },
-        {
-          "discipline": "Social Sciences",
-          "definition": "A prejudice or predisposition that affects judgment and decision-making."
-        }
-      ]
-    },
-    {
-      "term": "data",
-      "definitions": [
-        {
-          "discipline": "AI",
-          "definition": "A collection of examples or observations used for training and evaluating models."
-        },
-        {
-          "discipline": "Humanities",
-          "definition": "Any set of information (textual, historical, cultural artifacts) subject to interpretive analysis."
-        }
-      ]
-    }
-  ]
-  
+  {
+    "term": "model",
+    "definitions": [
+      {
+        "discipline": "AI",
+        "definition": "A learned representation that can make predictions or decisions based on input data."
+      },
+      {
+        "discipline": "Philosophy",
+        "definition": "A conceptual framework used to explain or simulate phenomena in the real world."
+      }
+    ]
+  },
+  {
+    "term": "bias",
+    "definitions": [
+      {
+        "discipline": "AI",
+        "definition": "A systematic deviation in model predictions that can lead to unfair or incorrect outcomes."
+      },
+      {
+        "discipline": "Social Sciences",
+        "definition": "A prejudice or predisposition that affects judgment and decision-making."
+      }
+    ]
+  },
+  {
+    "term": "data",
+    "definitions": [
+      {
+        "discipline": "AI",
+        "definition": "A collection of examples or observations used for training and evaluating models."
+      },
+      {
+        "discipline": "Humanities",
+        "definition": "Any set of information (textual, historical, cultural artifacts) subject to interpretive analysis."
+      }
+    ]
+  },
+  {
+    "term": "testing",
+    "definitions": [
+      {
+        "discipline": "CS",
+        "definition": "this is a test"
+      }
+    ]
+  }
+]
