@@ -11,16 +11,6 @@
   },
   {
     "term": "testing",
-    "discipline": "cs",
-    "definition": "this is a test"
-  },
-  {
-    "term": "testing",
-    "discipline": "data/ai ethics",
-    "definition": "a very different definition"
-  },
-  {
-    "term": "testing",
     "discipline": "test",
     "definition": "this is also a test"
   }
