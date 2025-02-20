@@ -165,9 +165,9 @@ rows = sheet.get_all_values()  # list of lists representing each row
 #  3 => Definition/Connotation
 
 for row in rows[1:]:  # skip the header
-    discipline = row[1].strip()
-    term = row[2].strip()
-    definition = row[3].strip()
+    discipline = row[1].strip().lower()
+    term = row[2].strip().lower()
+    definition = row[3].strip().lower()
     process_definition(discipline, term, definition)
 
 ##############################
