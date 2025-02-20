@@ -11,11 +11,6 @@
   },
   {
     "term": "testing",
-    "discipline": "CS",
-    "definition": "this is a test"
-  },
-  {
-    "term": "testing",
     "discipline": "cs",
     "definition": "this is a test"
   },
