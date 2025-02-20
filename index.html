@@ -1,12 +1,107 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Jargon Glossary</title>
-  </head>
-  <body>
-    <h1>AI & Humanities Glossary</h1>
-    <div id="conflict-table"></div>
-    <script src="main.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <title>AI & Humanities Glossary</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    table {
+      border-collapse: collapse;
+      width: 80%;
+      margin: 20px auto;
+    }
+    th, td {
+      border: 1px solid #000;
+      padding: 8px 12px;
+      vertical-align: top;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    h1 {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>AI &amp; Humanities Glossary</h1>
+
+  <table id="glossaryTable">
+    <thead>
+      <tr>
+        <th>Term</th>
+        <th>AI Definition</th>
+        <th>Humanities / Other Definition</th>
+        <th>Discipline</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Rows will be inserted here by JavaScript -->
+    </tbody>
+  </table>
+
+  <script>
+    // We'll fetch two JSON files:
+    // 1) 'terms.json' for known AI definitions
+    // 2) 'conflicting.json' for alternative definitions
+
+    // Adjust the paths as needed (assuming they live in 'data/' folder)
+    const termsUrl = 'data/terms.json';
+    const conflictsUrl = 'data/conflicting.json';
+
+    let termsData = [];
+    let conflictingData = [];
+
+    // Fetch both files in parallel
+    Promise.all([
+      fetch(termsUrl).then(response => response.json()),
+      fetch(conflictsUrl).then(response => response.json())
+    ])
+    .then(([terms, conflicts]) => {
+      termsData = terms;
+      conflictingData = conflicts;
+      renderTable();
+    })
+    .catch(error => {
+      console.error('Error fetching JSON data:', error);
+    });
+
+    // Helper function to get the AI definition for a term from terms.json
+    function getAIDefinition(term) {
+      // Find the matching term object
+      const termItem = termsData.find(item => item.term === term);
+      if (!termItem) return 'No AI definition found.';
+
+      // Look for the definition where discipline == "AI"
+      const aiDefObj = termItem.definitions.find(def => def.discipline === 'AI');
+      return aiDefObj
+        ? aiDefObj.definition
+        : 'No AI definition found.';
+    }
+
+    // Renders table rows combining AI definition + conflicting definition
+    function renderTable() {
+      const tbody = document.querySelector('#glossaryTable tbody');
+      let html = '';
+
+      conflictingData.forEach(conflict => {
+        const { term, definition, discipline } = conflict;
+        const aiDefinition = getAIDefinition(term);
+
+        html += `
+          <tr>
+            <td>${term}</td>
+            <td>${aiDefinition}</td>
+            <td>${definition}</td>
+            <td>${discipline}</td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = html;
+    }
+  </script>
+</body>
 </html>
