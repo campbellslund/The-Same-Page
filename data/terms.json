@@ -48,6 +48,10 @@
       {
         "discipline": "data/ai ethics",
         "definition": "a very different definition"
+      },
+      {
+        "discipline": "test",
+        "definition": "this is also a test"
       }
     ]
   }
