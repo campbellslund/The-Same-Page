@@ -8,5 +8,15 @@
     "term": "bias",
     "discipline": "Psychology",
     "definition": "A tendency or inclination that can shape perception and decision-making, similar to social science usage."
+  },
+  {
+    "term": "testing",
+    "discipline": "CS",
+    "definition": "this is a test"
+  },
+  {
+    "term": "testing",
+    "discipline": "test",
+    "definition": "this is also a test"
   }
 ]
